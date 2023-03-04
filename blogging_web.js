@@ -1,175 +1,104 @@
-let saveBlogbut = document.getElementById('saveBlogbut');
-let text1 = document.getElementById('exampleFormControlInput1');
-let text2 = document.getElementById('exampleFormControlTextarea1')
-let postbody = document.getElementById("postbody");
-let editmodal = document.getElementById('exampleModal2');
+const createBlogBtn = document.getElementById('create-blog-btn');
+const modal = document.getElementById('modal');
+const closeBtn = document.getElementById('close-btn');
+const cancelBtn = document.getElementById('cancel-btn');
+const saveBtn = document.getElementById('save-btn');
+const titleInput = document.getElementById('blog-title');
+const descriptionInput = document.getElementById('blog-description');
+const blogPostsContainer = document.getElementById('blog-posts');
+let blogPosts = [];
 
-let dataArr = [];
-function datetimerformatter(data) {
-    const arr = data.split(",");
-    const time = arr[1].split(":");
-    if (parseInt(time[0]) >= 12) {
-        const tval = parseInt(time[0]) == 12 ? "12" : time[0] % 12
-        return arr[0] + "  at " + tval + ":" + time[1] + " PM";
-    }
-    else {
-        return arr[0] + "  at " + time[0] + ":" + time[1] + " AM";
-    }
+// Open modal when Create a Blog button is clicked
+createBlogBtn.addEventListener('click', openModal);
+
+// Close modal when X button is clicked
+closeBtn.addEventListener('click', closeModal);
+
+// Close modal when cancel button is clicked
+cancelBtn.addEventListener('click', closeModal);
+
+// Save blog post and display it on the page
+saveBtn.addEventListener('click', saveBlogPost);
+
+// Delete blog post when Delete button is clicked
+blogPostsContainer.addEventListener('click', deleteBlogPost);
+
+// Edit blog post when Edit button is clicked
+blogPostsContainer.addEventListener('click', editBlogPost);
+
+function openModal() {
+  modal.style.display = 'block';
 }
 
-
-function deletedata(id) {
-
-    dataArr = dataArr.filter((item, ind) => {
-        return item.id != id;
-    })
-
-    postbody.innerHTML = dataArr.map((item, ind) => {
-        return (` <div class="row me-4 ms-4 my-4 p-3 border border-dark " >
-        <div class="heading my-2">
-          <h1>${item.heading}</h1>
-        </div>
-
-        <div class="contents">
-        ${item.post}
-        </div>
-
-        <div class="dateshower">
-            <div class="my-4">
-                <button type="button" id=${item.id} onclick=editdata(this.id) class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal2">
-                     Edit Post
-                 </button>
-                   <button type="button" id=${item.id} onclick=deletedata(this.id) class="btn btn-dark">Delete Post</button>
-                 </div>
-        
-        
-                  <div >
-                  ${item.text}: ${datetimerformatter(new Date().toLocaleString())}
-                 </div>
-        
-        </div>
-        </div> `)
-    }).join("")
-
-    console.log(dataArr)
+function closeModal() {
+  modal.style.display = 'none';
 }
 
-function editsavepost(data1, data2, id) {
-
-    console.log(data1, data2, id)
-    const data = { id: id, heading: data1, post: data2, text: "Last Updated At" }
-    dataArr = dataArr.map((item, ind) => {
-        if (item.id == id) {
-            return data;
-        }
-        else {
-            return item;
-        }
-    })
-
-    postbody.innerHTML = dataArr.map((item, ind) => {
-        return (` <div class="row me-4 ms-4 my-4 p-3 border border-dark " >
-        <div class="heading my-2">
-          <h1>${item.heading}</h1>
-        </div>
-
-        <div class="contents">
-        ${item.post}
-        </div>
-
-        <div class="dateshower">
-            <div class="my-4">
-                <button type="button" id=${item.id} onclick=editdata(this.id) class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal2">
-                     Edit Post
-                 </button>
-                   <button type="button" id=${item.id} onclick=deletedata(this.id) class="btn btn-dark">Delete Post</button>
-                 </div>
-        
-        
-                  <div >
-                 ${item.text}: ${datetimerformatter(new Date().toLocaleString())}
-                 </div>
-        
-        </div>
-        </div> `)
-    }).join("")
-    console.log(dataArr)
-
+function clearForm() {
+  titleInput.value = '';
+  descriptionInput.value = '';
 }
 
-function editdata(id) {
-    const data = dataArr.filter((item, ind) => {
-        return item.id == id
-    })
-
-
-
-    editmodal.innerHTML = `<div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Edit a new post</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-          <div class="mb-3">
-              <label for="exampleFormControlInput1" class="form-label"></label>
-              <input type="text" class="form-control form-control-lg" id="exampleFormControlInputedit1" placeholder="Enter Your Heading" value=${data[0].heading} >
-            </div>
-            <div class="mb-3">
-              <label for="exampleFormControlTextarea1" class="form-label"></label>
-              <textarea class="form-control form-control-lg" id="exampleFormControlTextareaedit2" rows="3" placeholder="Enter Your Blog Post">${data[0].post}</textarea>
-            </div>
-      </div>
-      <div class="modal-footer">
-       
-        <button type="button" id="saveBlogbut" onclick=editsavepost(document.getElementById('exampleFormControlInputedit1').value,document.getElementById('exampleFormControlTextareaedit2').value,${id}) data-bs-dismiss="modal" class="btn btn-dark">Save Post</button>
-        <button type="button" class="btn btn-dark" onclick=deletedata(id) data-bs-dismiss="modal">Delete Post</button>
-      </div>
-    </div>
-    </div> `
-
+function saveBlogPost(event) {
+  event.preventDefault();
+  const title = titleInput.value;
+  const description = descriptionInput.value;
+  if (title.trim() === '' || description.trim() === '') {
+    alert('Please fill in all fields');
+    return;
+  }
+  const dateTime = new Date();
+  const blogPost = { title, description, dateTime };
+  blogPosts.push(blogPost);
+  displayBlogPosts();
+  closeModal();
+  clearForm();
 }
 
+function displayBlogPosts() {
+  blogPostsContainer.innerHTML = '';
+  blogPosts.forEach((blogPost, index) => {
+    const blogPostElement = document.createElement('div');
+    blogPostElement.classList.add('blog-post');
+    const titleElement = document.createElement('h3');
+    titleElement.textContent = blogPost.title;
+    const descriptionElement = document.createElement('p');
+    descriptionElement.textContent = blogPost.description;
+    const dateTimeElement = document.createElement('p');
+    const dateTimeString = blogPost.dateTime.toLocaleString();
+    dateTimeElement.textContent = `Posted on ${dateTimeString}`;
+    dateTimeElement.classList.add('dateTime');
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.dataset.index = index;
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Edit';
+    editBtn.dataset.index = index;
+    blogPostElement.appendChild(titleElement);
+    blogPostElement.appendChild(descriptionElement);
+    blogPostElement.appendChild(editBtn);
+    blogPostElement.appendChild(deleteBtn);
+    blogPostElement.appendChild(dateTimeElement);
+    blogPostsContainer.appendChild(blogPostElement);
+  });
+}
 
+function deleteBlogPost(event) {
+  if (event.target.tagName.toLowerCase() === 'button' && event.target.textContent === 'Delete') {
+    const index = event.target.dataset.index;
+    blogPosts.splice(index, 1);
+    displayBlogPosts();
+  }
+}
 
-saveBlogbut.addEventListener("click", function () {
-
-    const data = { id: dataArr.length + 1, heading: text1.value, post: text2.value, text: "Created At" }
-
-    dataArr.push(data)
-
-    postbody.innerHTML = dataArr.map((item, ind) => {
-        return (`  <div class="row me-4 ms-4 my-4 p-3 border border-dark " >
-        <div class="heading my-2">
-          <h1>${item.heading}</h1>
-        </div>
-
-        <div class="contents">
-        ${item.post}
-        </div>
-
-        <div class="dateshower">
-            <div class="my-4">
-                <button type="button" id=${item.id} onclick=editdata(this.id) class="btn btn-dark  my-2" data-bs-toggle="modal" data-bs-target="#exampleModal2">
-                     Edit Post
-                 </button>
-                   <button type="button" id=${item.id} onclick=deletedata(this.id) class="btn btn-dark my-2">Delete Post</button>
-                 </div>
-        
-        
-                  <div >
-                  ${item.text}: ${datetimerformatter(new Date().toLocaleString())}
-                 </div>
-        
-        </div>
-        </div>
-        
-        `)
-    }).join("")
-
-
-
-})
-
-
-
+function editBlogPost(event) {
+  if (event.target.tagName.toLowerCase() === 'button' && event.target.textContent === 'Edit') {
+    const index = event.target.dataset.index;
+    const blogPost = blogPosts[index];
+    titleInput.value = blogPost.title;
+    descriptionInput.value = blogPost.description;
+    blogPosts.splice(index, 1);
+    displayBlogPosts();
+    openModal();
+  }
+}
